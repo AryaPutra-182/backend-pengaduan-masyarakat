@@ -1,0 +1,66 @@
+// Prisma schema generated from existing Mongoose models (starting point).
+// Review types and relations, then run `npx prisma migrate dev --name init` or
+// `npx prisma db push` and `npx prisma generate` locally.
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int         @id @default(autoincrement())
+  nama_lengkap String
+  nik          String      @unique
+  no_hp        String
+  alamat       String
+  username     String      @unique
+  password     String
+  pengaduans   Pengaduan[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Admin {
+  id         Int      @id @default(autoincrement())
+  nama_lengkap String
+  username   String   @unique
+  password   String
+  createdAt  DateTime @default(now())
+}
+
+model Kategori {
+  id           Int         @id @default(autoincrement())
+  nama_kategori String      @unique
+  deskripsi    String
+  pengaduans   Pengaduan[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Pengaduan {
+  id         Int       @id @default(autoincrement())
+  kategori   Kategori  @relation(fields: [kategoriId], references: [id])
+  kategoriId Int
+  user       User?     @relation(fields: [userId], references: [id])
+  userId     Int?
+  judul      String
+  deskripsi  String
+  lokasi     String
+  status     String    @default("pending")
+  lampiran   Lampiran[]
+  // tanggapan omitted (no model in repo)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Lampiran {
+  id          Int       @id @default(autoincrement())
+  pengaduan   Pengaduan @relation(fields: [pengaduanId], references: [id])
+  pengaduanId Int
+  filePath    String
+  createdAt   DateTime  @default(now())
+}

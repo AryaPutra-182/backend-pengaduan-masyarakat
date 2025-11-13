@@ -1,25 +1,31 @@
-import mongoose from 'mongoose';
+import prisma from '../utils/prisma.js';
 
-const adminSchema = new mongoose.Schema({
-  nama_lengkap: {
-    type: String,
-    required: true,
-  },
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-});
+const normalize = (a) => (a ? { ...a, _id: a.id } : null);
 
-const Admin = mongoose.model('Admin', adminSchema);
+class AdminModel {
+  constructor(data = {}) {
+    this.data = data;
+  }
 
-export default Admin;
+  async save() {
+    const created = await prisma.admin.create({ data: this.data });
+    return normalize(created);
+  }
+
+  static async find() {
+    const list = await prisma.admin.findMany();
+    return list.map(normalize);
+  }
+
+  static async findByIdAndUpdate(id, data) {
+    const updated = await prisma.admin.update({ where: { id: Number(id) }, data });
+    return normalize(updated);
+  }
+
+  static async findByIdAndDelete(id) {
+    const deleted = await prisma.admin.delete({ where: { id: Number(id) } });
+    return normalize(deleted);
+  }
+}
+
+export default AdminModel;

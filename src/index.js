@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
@@ -12,9 +11,13 @@ import dashboardRoutes from './routes/dashboard.js';
 import notifikasiRoutes from './routes/notifikasi.js';
 import errorHandler from './middlewares/errorHandler.js';
 import config from './config/index.js';
+import prisma from './utils/prisma.js';
+
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./docs/api-specs.json" with { type: "json" };
 
 const app = express();
-
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
@@ -33,16 +36,15 @@ app.use('/api/notifikasi', notifikasiRoutes);
 // Error handling middleware
 app.use(errorHandler);
 
-// Database connection
-mongoose.connect(config.database.uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => {
-  console.log('Database connected successfully');
-})
-.catch(err => {
-  console.error('Database connection error:', err);
+// Prisma DB connection
+prisma.$connect()
+  .then(() => console.log('Prisma connected successfully'))
+  .catch((err) => console.error('Prisma connection error:', err));
+
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+  await prisma.$disconnect();
+  process.exit(0);
 });
 
 // Start the server

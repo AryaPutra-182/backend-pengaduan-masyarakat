@@ -1,51 +1,50 @@
-import mongoose from 'mongoose';
+import prisma from '../utils/prisma.js';
 
-const pengaduanSchema = new mongoose.Schema({
-  kategori_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Kategori',
-    required: true,
-  },
-  judul: {
-    type: String,
-    required: true,
-  },
-  deskripsi: {
-    type: String,
-    required: true,
-  },
-  lokasi: {
-    type: String,
-    required: true,
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'proses', 'disetujui', 'selesai', 'ditolak'],
-    default: 'pending',
-  },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-  updated_at: {
-    type: Date,
-    default: Date.now,
-  },
-  lampiran: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Lampiran',
-  }],
-  tanggapan: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Tanggapan',
-  }],
-});
+const normalize = (p) => (p ? { ...p, _id: p.id } : null);
 
-pengaduanSchema.pre('save', function (next) {
-  this.updated_at = Date.now();
-  next();
-});
+class PengaduanModel {
+  constructor(data = {}) {
+    this.data = data;
+  }
 
-const Pengaduan = mongoose.model('Pengaduan', pengaduanSchema);
+  async save() {
+    // Map possible kategori_id -> kategoriId
+    const payload = { ...this.data };
+    if (payload.kategori_id) {
+      payload.kategoriId = Number(payload.kategori_id);
+      delete payload.kategori_id;
+    }
+    if (payload.userId) payload.userId = Number(payload.userId);
 
-export default Pengaduan;
+    const created = await prisma.pengaduan.create({ data: payload });
+    return normalize(created);
+  }
+
+  static async find() {
+    const list = await prisma.pengaduan.findMany();
+    return list.map(normalize);
+  }
+
+  static async findById(id) {
+    const p = await prisma.pengaduan.findUnique({ where: { id: Number(id) } });
+    return normalize(p);
+  }
+
+  static async findByIdAndUpdate(id, data) {
+    const payload = { ...data };
+    if (payload.kategori_id) {
+      payload.kategoriId = Number(payload.kategori_id);
+      delete payload.kategori_id;
+    }
+    if (payload.userId) payload.userId = Number(payload.userId);
+    const updated = await prisma.pengaduan.update({ where: { id: Number(id) }, data: payload });
+    return normalize(updated);
+  }
+
+  static async findByIdAndDelete(id) {
+    const deleted = await prisma.pengaduan.delete({ where: { id: Number(id) } });
+    return normalize(deleted);
+  }
+}
+
+export default PengaduanModel;

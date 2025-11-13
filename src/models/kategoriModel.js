@@ -1,17 +1,36 @@
-import mongoose from 'mongoose';
+import prisma from '../utils/prisma.js';
 
-const kategoriSchema = new mongoose.Schema({
-  nama_kategori: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  deskripsi: {
-    type: String,
-    required: true,
-  },
-}, { timestamps: true });
+const normalize = (k) => (k ? { ...k, _id: k.id } : null);
 
-const Kategori = mongoose.model('Kategori', kategoriSchema);
+class KategoriModel {
+  constructor(data = {}) {
+    this.data = data;
+  }
 
-export default Kategori;
+  async save() {
+    const created = await prisma.kategori.create({ data: this.data });
+    return normalize(created);
+  }
+
+  static async find() {
+    const list = await prisma.kategori.findMany();
+    return list.map(normalize);
+  }
+
+  static async findByIdAndUpdate(id, data) {
+    const updated = await prisma.kategori.update({ where: { id: Number(id) }, data });
+    return normalize(updated);
+  }
+
+  static async findByIdAndDelete(id) {
+    const deleted = await prisma.kategori.delete({ where: { id: Number(id) } });
+    return normalize(deleted);
+  }
+
+  static async findById(id) {
+    const k = await prisma.kategori.findUnique({ where: { id: Number(id) } });
+    return normalize(k);
+  }
+}
+
+export default KategoriModel;

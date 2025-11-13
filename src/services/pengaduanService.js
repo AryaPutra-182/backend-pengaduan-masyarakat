@@ -1,16 +1,19 @@
-import PengaduanModel from '../models/pengaduanModel.js';
-import UserModel from '../models/userModel.js';
-import ResponseHelper, { ErrorResponse } from '../utils/responseHelper.js';
+import prisma from '../utils/prisma.js';
+import { ErrorResponse } from '../utils/responseHelper.js';
 
 // Create a new complaint
 export const createPengaduan = async (data, userId) => {
     try {
-        const pengaduan = new PengaduanModel({
-            ...data,
-            user: userId,
+        const payload = {
+            kategoriId: Number(data.kategori_id || data.kategoriId || data.kategoriId),
+            judul: data.judul,
+            deskripsi: data.deskripsi || data.isi || '',
+            lokasi: data.lokasi || '',
             status: 'pending',
-        });
-        await pengaduan.save();
+            userId: userId ? Number(userId) : undefined,
+        };
+
+        const pengaduan = await prisma.pengaduan.create({ data: payload });
         return pengaduan;
     } catch (error) {
         throw new ErrorResponse('Failed to create complaint', 500, error);
@@ -20,8 +23,8 @@ export const createPengaduan = async (data, userId) => {
 // Get complaints by user
 export const getPengaduanByUser = async (userId) => {
     try {
-        const pengaduanList = await PengaduanModel.find({ user: userId });
-        return pengaduanList;
+        const list = await prisma.pengaduan.findMany({ where: { userId: Number(userId) } });
+        return list;
     } catch (error) {
         throw new ErrorResponse('Failed to retrieve complaints', 500, error);
     }
@@ -30,8 +33,8 @@ export const getPengaduanByUser = async (userId) => {
 // Get complaint details
 export const getPengaduanDetails = async (id, userId) => {
     try {
-        const pengaduan = await PengaduanModel.findById(id);
-        if (!pengaduan || pengaduan.user.toString() !== userId) {
+        const pengaduan = await prisma.pengaduan.findUnique({ where: { id: Number(id) } });
+        if (!pengaduan || (pengaduan.userId && String(pengaduan.userId) !== String(userId))) {
             throw new ErrorResponse('Complaint not found or access denied', 404);
         }
         return pengaduan;

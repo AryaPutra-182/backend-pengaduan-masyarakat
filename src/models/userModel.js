@@ -1,14 +1,44 @@
-import mongoose from 'mongoose';
+import prisma from '../utils/prisma.js';
 
-const userSchema = new mongoose.Schema({
-  nama_lengkap: { type: String, required: true },
-  nik: { type: String, required: true, unique: true },
-  no_hp: { type: String, required: true },
-  alamat: { type: String, required: true },
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-}, { timestamps: true });
+const normalize = (u) => {
+  if (!u) return null;
+  return { ...u, _id: u.id };
+};
 
-const User = mongoose.model('User', userSchema);
+class UserModel {
+  constructor(data = {}) {
+    this.data = data;
+  }
 
-export default User;
+  async save() {
+    const created = await prisma.user.create({ data: this.data });
+    return normalize(created);
+  }
+
+  static async findOne(query = {}) {
+    const where = {};
+    if (query.username) where.username = query.username;
+    if (query.nik) where.nik = query.nik;
+    if (query._id || query.id) where.id = Number(query._id ?? query.id);
+
+    const user = await prisma.user.findFirst({ where });
+    return normalize(user);
+  }
+
+  static async findById(id) {
+    const user = await prisma.user.findUnique({ where: { id: Number(id) } });
+    return normalize(user);
+  }
+
+  static async findByIdAndUpdate(id, data) {
+    const updated = await prisma.user.update({ where: { id: Number(id) }, data });
+    return normalize(updated);
+  }
+
+  static async findByIdAndDelete(id) {
+    const deleted = await prisma.user.delete({ where: { id: Number(id) } });
+    return normalize(deleted);
+  }
+}
+
+export default UserModel;

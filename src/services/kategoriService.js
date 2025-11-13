@@ -1,9 +1,8 @@
-import KategoriModel from '../models/kategoriModel.js';
+import prisma from '../utils/prisma.js';
 
 export const getAllCategories = async () => {
   try {
-    const categories = await KategoriModel.find();
-    return categories;
+    return await prisma.kategori.findMany();
   } catch (error) {
     throw new Error('Error fetching categories: ' + error.message);
   }
@@ -11,9 +10,7 @@ export const getAllCategories = async () => {
 
 export const createCategory = async (categoryData) => {
   try {
-    const newCategory = new KategoriModel(categoryData);
-    await newCategory.save();
-    return newCategory;
+    return await prisma.kategori.create({ data: categoryData });
   } catch (error) {
     throw new Error('Error creating category: ' + error.message);
   }
@@ -21,11 +18,8 @@ export const createCategory = async (categoryData) => {
 
 export const updateCategory = async (id, categoryData) => {
   try {
-    const updatedCategory = await KategoriModel.findByIdAndUpdate(id, categoryData, { new: true });
-    if (!updatedCategory) {
-      throw new Error('Category not found');
-    }
-    return updatedCategory;
+    const updated = await prisma.kategori.update({ where: { id: Number(id) }, data: categoryData });
+    return updated;
   } catch (error) {
     throw new Error('Error updating category: ' + error.message);
   }
@@ -33,11 +27,8 @@ export const updateCategory = async (id, categoryData) => {
 
 export const deleteCategory = async (id) => {
   try {
-    const deletedCategory = await KategoriModel.findByIdAndDelete(id);
-    if (!deletedCategory) {
-      throw new Error('Category not found');
-    }
-    return deletedCategory;
+    const deleted = await prisma.kategori.delete({ where: { id: Number(id) } });
+    return deleted;
   } catch (error) {
     throw new Error('Error deleting category: ' + error.message);
   }
@@ -45,10 +36,8 @@ export const deleteCategory = async (id) => {
 
 export const getCategoryById = async (id) => {
   try {
-    const category = await KategoriModel.findById(id);
-    if (!category) {
-      throw new Error('Category not found');
-    }
+    const category = await prisma.kategori.findUnique({ where: { id: Number(id) } });
+    if (!category) throw new Error('Category not found');
     return category;
   } catch (error) {
     throw new Error('Error fetching category: ' + error.message);
@@ -60,4 +49,5 @@ export default {
   createCategory,
   updateCategory,
   deleteCategory,
+  getCategoryById,
 };

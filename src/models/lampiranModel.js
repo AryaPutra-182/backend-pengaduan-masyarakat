@@ -1,21 +1,33 @@
-import mongoose from 'mongoose';
+import prisma from '../utils/prisma.js';
 
-const lampiranSchema = new mongoose.Schema({
-  pengaduanId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Pengaduan',
-    required: true,
-  },
-  filePath: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+const normalize = (l) => (l ? { ...l, _id: l.id } : null);
 
-const Lampiran = mongoose.model('Lampiran', lampiranSchema);
+class LampiranModel {
+  constructor(data = {}) {
+    this.data = data;
+  }
 
-export default Lampiran;
+  async save() {
+    const payload = { ...this.data };
+    if (payload.pengaduanId) payload.pengaduanId = Number(payload.pengaduanId);
+    const created = await prisma.lampiran.create({ data: payload });
+    return normalize(created);
+  }
+
+  static async findById(id) {
+    const l = await prisma.lampiran.findUnique({ where: { id: Number(id) } });
+    return normalize(l);
+  }
+
+  static async findManyByPengaduan(pengaduanId) {
+    const list = await prisma.lampiran.findMany({ where: { pengaduanId: Number(pengaduanId) } });
+    return list.map(normalize);
+  }
+
+  static async deleteById(id) {
+    const deleted = await prisma.lampiran.delete({ where: { id: Number(id) } });
+    return normalize(deleted);
+  }
+}
+
+export default LampiranModel;
