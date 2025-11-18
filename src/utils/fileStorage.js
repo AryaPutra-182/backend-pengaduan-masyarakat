@@ -6,18 +6,17 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Set up storage for file uploads
+// Setup folder uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, join(__dirname, '../../uploads')); // Specify the upload directory
+    cb(null, join(__dirname, '../../uploads')); // pastikan folder uploads ada
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname)); // Create a unique filename
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-// Initialize multer with the storage configuration
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 export default upload;

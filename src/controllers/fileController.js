@@ -1,40 +1,59 @@
-import express from 'express';
-import fileStorage from '../utils/fileStorage.js';
-import ResponseHelper, { ErrorResponseObject } from '../utils/responseHelper.js';
+import prisma from '../utils/prisma.js';
+import path from 'path';
+import fs from 'fs';
 
-const router = express.Router();
+export const uploadLampiran = async (req, res) => {
+  try {
+    const pengaduanId = parseInt(req.params.id);
 
-// Upload file attachment
-router.post('/:id/lampiran', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const file = req.files.file; // Assuming you're using a middleware like express-fileupload
-
-        if (!file) {
-            return res.status(400).json(ErrorResponseObject('File not found'));
-        }
-
-        const result = await fileStorage.uploadFile?.(id, file) || null;
-        return res.status(201).json({ message: 'Lampiran berhasil di-upload', data: result });
-    } catch (error) {
-        return res.status(500).json(new ErrorResponse('Failed to upload file'));
+    if (!req.file) {
+      return res.status(400).json({ message: 'Tidak ada file yang diunggah' });
     }
-});
 
-// Download file attachment
-router.get('/:id/lampiran/:fileId', async (req, res) => {
-    try {
-        const { id, fileId } = req.params;
-        const file = await fileStorage.downloadFile(id, fileId);
+    const filePath = `/uploads/${req.file.filename}`;
 
-        if (!file) {
-            return res.status(404).json(ErrorResponseObject('File lampiran tidak ditemukan'));
-        }
+    const lampiran = await prisma.lampiran.create({
+      data: {
+        pengaduanId,
+        filePath,
+      },
+    });
 
-        res.download(file.path); // Assuming file.path contains the path to the file
-    } catch (error) {
-        return res.status(500).json(new ErrorResponse('Failed to download file'));
+    res.status(201).json({
+      message: 'Lampiran berhasil diunggah',
+      lampiran,
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({
+      message: 'Gagal mengunggah lampiran',
+      error: error.message,
+    });
+  }
+};
+
+export const downloadLampiran = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+    const lampiran = await prisma.lampiran.findUnique({
+      where: { id: parseInt(fileId) },
+    });
+
+    if (!lampiran) {
+      return res.status(404).json({ message: 'Lampiran tidak ditemukan' });
     }
-});
 
-export default router;
+    const filePath = path.join(process.cwd(), lampiran.filePath);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'File tidak ditemukan di server' });
+    }
+
+    res.download(filePath);
+  } catch (error) {
+    console.error('Download error:', error);
+    res.status(500).json({
+      message: 'Gagal mengunduh lampiran',
+      error: error.message,
+    });
+  }
+};
