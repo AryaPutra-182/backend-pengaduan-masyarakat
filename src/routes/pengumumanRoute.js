@@ -12,8 +12,6 @@ import roleMiddleware from "../middlewares/roleMiddleware.js";
 import upload from "../middlewares/uploadMiddleware.js";
 
 const router = express.Router();
-
-// 🟢 CREATE
 router.post(
   "/",
   authMiddleware,

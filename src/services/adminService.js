@@ -3,9 +3,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import config from '../config/index.js';
 
-// ===============================
-// 🔐 LOGIN ADMIN
-// ===============================
 export const loginAdmin = async (username, password) => {
   const admin = await prisma.admin.findUnique({ where: { username } });
 
@@ -20,7 +17,7 @@ export const loginAdmin = async (username, password) => {
       role: admin.role, // 'admin' / 'master_admin' / 'pimpinan'
     },
     config.JWT_SECRET,
-    { expiresIn: '1d' } // Token berlaku 1 hari
+    { expiresIn: '1d' }
   );
 
   return {
@@ -34,9 +31,6 @@ export const loginAdmin = async (username, password) => {
   };
 };
 
-// ===============================
-// 👑 ADMIN CRUD (FIXED)
-// ===============================
 export const getAllAdmins = async () => {
   return await prisma.admin.findMany({
     select: {
@@ -57,7 +51,6 @@ export const createAdmin = async (data) => {
       nama_lengkap: data.nama_lengkap,
       username: data.username,
       password: hashedPassword,
-      // 💥 PERBAIKAN: Enum Anda huruf kecil, gunakan toLowerCase()
       role: data.role?.toLowerCase() || 'admin',
     },
   });
@@ -69,7 +62,6 @@ export const updateAdmin = async (id, data) => {
   }
 
   if (data.role) {
-    // 💥 PERBAIKAN: Enum Anda huruf kecil, gunakan toLowerCase()
     data.role = data.role.toLowerCase();
   }
 
@@ -85,12 +77,8 @@ export const deleteAdmin = async (id) => {
   });
 };
 
-// ===============================
-// 👤 USERS
-// ===============================
 export const getAllUsers = async () => {
   return await prisma.user.findMany({
-    // Hapus 'password' dari 'select' untuk keamanan
     select: {
       id: true,
       nama_lengkap: true,
@@ -103,9 +91,6 @@ export const getAllUsers = async () => {
   });
 };
 
-// ===============================
-// 📩 LIST & SEARCH PENGADUAN (FIXED)
-// ===============================
 export const getAllPengaduan = async (
   page = 1,
   limit = 10,
@@ -113,12 +98,9 @@ export const getAllPengaduan = async (
   role // 1. Tambahkan 'role'
 ) => {
   const skip = (page - 1) * limit;
-
-  // 2. Buat klausa 'where' dasar untuk pencarian
   const searchClause = search
     ? {
         OR: [
-          // 💥 PERBAIKAN: Logika pencarian relasi yang benar
           { user: { nama_lengkap: { contains: search } } },
           { user: { nik: { contains: search } } },
           { kategori: { nama_kategori: { contains: search } } },
@@ -127,19 +109,18 @@ export const getAllPengaduan = async (
       }
     : {};
 
-  // 3. Buat klausa filter berdasarkan role
   const roleClause = {};
   if (role === 'pimpinan') {
     // Pimpinan HANYA melihat aduan yang perlu persetujuan
     roleClause.status = { in: ['diterima', 'diproses', 'dilaksanakan'] };
   }
-  // Admin & Master Admin melihat semua (roleClause tetap kosong)
+
 
   return prisma.pengaduan.findMany({
     skip,
     take: limit,
     where: {
-      AND: [searchClause, roleClause], // 4. Gabungkan kedua klausa
+      AND: [searchClause, roleClause], 
     },
     include: {
       user: { select: { nama_lengkap: true, nik: true } },
@@ -150,7 +131,6 @@ export const getAllPengaduan = async (
 };
 
 export const countPengaduan = async (search = "", role) => {
-  // Logika filter yang sama seperti di atas
   const searchClause = search
     ? {
         OR: [
@@ -173,39 +153,26 @@ export const countPengaduan = async (search = "", role) => {
     },
   });
 };
-
-// ===============================
-// 📝 DETAIL
-// ===============================
 export const getComplaintDetails = async (id) => {
   return await prisma.pengaduan.findUnique({
     where: { id: Number(id) },
     include: {
-      user: true, // Ambil semua data user untuk detail
+      user: true, 
       kategori: true,
       lampiran: true,
     },
   });
 };
-
-// ===============================
-// ⚙ STATUS UPDATE (FIXED)
-// ===============================
-
-// 1. Ganti nama 'validateComplaint' menjadi 'verifikasiPengaduan'
 export const verifikasiPengaduan = async (id, status) => {
   return prisma.pengaduan.update({
     where: { id: Number(id) },
     data: {
-      status: status, // status dari req.body ('diterima', 'ditolak', 'diproses')
-      // 💥 'catatan' DIHAPUS untuk menghindari error
+      status: status, 
     },
   });
 };
 
-// 2. TAMBAHKAN FUNGSI BARU 'setujuiPengaduan'
 export const setujuiPengaduan = async (id, status) => {
-  // Validasi: Pastikan aduan ini sudah 'diterima' atau 'diproses'
   const aduan = await prisma.pengaduan.findUnique({
     where: { id: Number(id) },
   });
@@ -215,23 +182,21 @@ export const setujuiPengaduan = async (id, status) => {
       "Hanya aduan yang sudah 'diterima' atau 'diproses' yang bisa disetujui."
     );
   }
-
-  // Update status menjadi 'dilaksanakan'
   return prisma.pengaduan.update({
     where: { id: Number(id) },
     data: {
-      status: status, // Ini akan menjadi "dilaksanakan"
+      status: status, 
     },
   });
 };
 export const selesaikanAduan = async (id) => {
-    // 1. Cek status saat ini
+    
     const aduan = await prisma.pengaduan.findUnique({
         where: { id: Number(id) },
         select: { status: true }
     });
 
-    // 2. Validasi: Hanya bisa diselesaikan jika sudah dilaksanakan
+
     if (aduan?.status !== 'dilaksanakan') {
         throw new Error(
             `Aduan hanya bisa diselesaikan jika statusnya 'dilaksanakan'. Status saat ini: ${aduan?.status}`
@@ -242,21 +207,16 @@ export const selesaikanAduan = async (id) => {
     return prisma.pengaduan.update({
         where: { id: Number(id) },
         data: {
-            status: 'selesai', // Status baru
+            status: 'selesai', 
         },
     });
 };
 
-
-// 3. Perbaiki 'respondToComplaint' (Jika Anda menggunakannya)
 export const respondToComplaint = async (id, notes) => {
   return prisma.pengaduan.update({
     where: { id: Number(id) },
     data: {
-      // 💥 PERBAIKAN: "selesai" tidak ada di enum, ganti jadi "dilaksanakan"
       status: 'dilaksanakan', 
-      // 💥 'catatan' DIHAPUS. Jika ingin pakai, tambahkan ke schema.prisma & migrasi
-      // catatan: notes
     },
   });
 };

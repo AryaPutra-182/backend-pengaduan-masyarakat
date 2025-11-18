@@ -13,9 +13,6 @@ enum RoleAdmin {
   pimpinan
 }
 
-// ==========================================================
-// PERUBAHAN 1: Semua status diubah ke huruf kecil
-// ==========================================================
 enum StatusPengaduan {
   pending       // <-- Default
   diterima
@@ -62,9 +59,6 @@ model pengaduan {
   deskripsi  String
   lokasi     String
 
-  // ==========================================================
-  // PERUBAHAN 2: Tipe data dan default sudah sesuai
-  // ==========================================================
   status     StatusPengaduan @default(pending) // <-- Default 'pending'
 
   createdAt  DateTime   @default(now())

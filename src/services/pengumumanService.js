@@ -1,6 +1,4 @@
 import prisma from "../utils/prisma.js";
-
-// ===================== CREATE =====================
 export const createPengumuman = async (data, adminId) => {
   console.log("🟢 CREATE:", {
     judul: data.judul,
@@ -19,7 +17,6 @@ export const createPengumuman = async (data, adminId) => {
   });
 };
 
-// ===================== READ ALL =====================
 export const getAllPengumuman = async () => {
   return prisma.pengumuman.findMany({
     orderBy: { dibuatPada: "desc" },
@@ -31,7 +28,6 @@ export const getAllPengumuman = async () => {
   });
 };
 
-// ===================== READ ONE =====================
 export const getPengumumanById = async (id) => {
   return prisma.pengumuman.findUnique({
     where: { id: Number(id) },
@@ -41,7 +37,6 @@ export const getPengumumanById = async (id) => {
   });
 };
 
-// ===================== UPDATE =====================
 export const updatePengumuman = async (id, data) => {
   console.log("🟡 UPDATE:", id, data);
 
@@ -55,7 +50,6 @@ export const updatePengumuman = async (id, data) => {
   });
 };
 
-// ===================== DELETE =====================
 export const deletePengumuman = async (id) => {
   console.log("🔴 DELETE:", id);
 

@@ -21,9 +21,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// =====================
-// PENTING → Tambah auth!
-// =====================
 router.post('/', authMiddleware, createPengaduan);
 router.get('/me', authMiddleware, getPengaduanSaya);
 router.get('/:id', authMiddleware, getPengaduanDetail);

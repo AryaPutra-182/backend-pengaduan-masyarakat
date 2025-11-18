@@ -17,18 +17,12 @@ import {
   deleteAdmin,
   selesaikanAduan
 } from "../services/adminService.js";
-
-// Impor statistik sistem (Pastikan path controller ini benar)
 import { getSystemStatistics } from "../controllers/dashboardController.js";
 
 import authMiddleware from "../middlewares/authMiddleware.js";
-import roleMiddleware from "../mid  dlewares/roleMiddleware.js";
+import roleMiddleware from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
-
-// ======================================
-// LOGIN ADMIN
-// ======================================
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -51,10 +45,6 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 });
-
-// ======================================
-// GET ALL USERS
-// ======================================
 router.get(
   "/users",
   authMiddleware,
@@ -69,10 +59,6 @@ router.get(
     }
   }
 );
-
-// ======================================
-// DELETE USER
-// ======================================
 router.delete(
   "/users/:id",
   authMiddleware,
@@ -93,13 +79,10 @@ router.delete(
   }
 );
 
-// ======================================
-// GET ALL PENGADUAN
-// ======================================
 router.get(
   "/pengaduan",
   authMiddleware,
-  roleMiddleware(["admin", "master_admin", "pimpinan"]), // Pimpinan boleh lihat
+  roleMiddleware(["admin", "master_admin", "pimpinan"]), 
   async (req, res) => {
     try {
       const page = Number(req.query.page) || 1;
@@ -126,9 +109,6 @@ router.get(
   }
 );
 
-// ======================================
-// DETAIL PENGADUAN
-// ======================================
 router.get(
   "/pengaduan/:id",
   authMiddleware,
@@ -144,9 +124,6 @@ router.get(
   }
 );
 
-// ========================================================
-// VERIFIKASI (Hanya Admin & Master Admin)
-// ========================================================
 router.put(
   "/pengaduan/:id/verifikasi",
   authMiddleware,
@@ -199,9 +176,6 @@ router.put(
   }
 );
 
-// ========================================================
-// PERSETUJUAN (Hanya Pimpinan)
-// ========================================================
 router.put(
   "/pengaduan/:id/persetujuan",
   authMiddleware,
@@ -227,9 +201,6 @@ router.put(
   }
 );
 
-// ========================================================
-// 👑 MANAJEMEN ADMIN (Hanya Master Admin)
-// ========================================================
 
 // 1. GET ALL ADMINS
 router.get(
@@ -328,9 +299,6 @@ router.delete(
   }
 );
 
-// ======================================
-// CRUD KATEGORI
-// ======================================
 router.get(
   "/kategori",
   authMiddleware,
@@ -359,9 +327,6 @@ router.delete(
   kategoriController.deleteCategory
 );
 
-// ======================================
-// DASHBOARD MASTER (Statistik Sistem)
-// ======================================
 router.get(
   "/dashboard/statistik-sistem",
   authMiddleware,

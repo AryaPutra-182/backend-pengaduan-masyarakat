@@ -4,13 +4,9 @@ import path from "path";
 // Set up disk storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Pastikan folder ini ada di root project Anda (sejajar dengan package.json)
     cb(null, "public/uploads"); 
   },
   filename: (req, file, cb) => {
-    // --- PERBAIKAN UTAMA DI SINI ---
-    // Ganti semua spasi (\s+) dengan tanda strip (-)
-    // Contoh: "Foto Saya.jpg" menjadi "Foto-Saya.jpg"
     const cleanName = file.originalname.replace(/\s+/g, '-');
     
     const uniqueName = Date.now() + "-" + cleanName;

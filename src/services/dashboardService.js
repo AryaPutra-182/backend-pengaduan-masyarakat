@@ -1,25 +1,15 @@
-import prisma from "../utils/prisma.js"; // Pastikan path ke prisma.js sudah benar
-
-// ==========================================================
-// FUNGSI STATISTIK LAPORAN (YANG BENAR)
-// ==========================================================
+import prisma from "../utils/prisma.js"; 
 export const getStatistics = async (role) => {
   try {
-    // 1. Buat filter role, HANYA untuk pimpinan
     const roleFilter = {};
     if (role === "pimpinan") {
-      // Pimpinan hanya bisa melihat status yang relevan bagi mereka
       roleFilter.status = {
         in: ["diterima", "diproses", "dilaksanakan"],
       };
     }
-    // Jika rolenya 'admin' atau 'master_admin', roleFilter akan kosong (melihat semua)
-
-    // 2. Hitung TOTAL KESELURUHAN (tanpa filter role)
-    //    'total' harus selalu menunjukkan semua aduan.
     const total = await prisma.pengaduan.count({});
 
-    // 3. Hitung sisanya MENGGUNAKAN filter role
+   
     const pending = await prisma.pengaduan.count({
       where: { AND: [{ status: "pending" }, roleFilter] },
     });
@@ -40,16 +30,13 @@ export const getStatistics = async (role) => {
       where: { AND: [{ status: "ditolak" }, roleFilter] },
     });
 
-    // 4. Sesuaikan dengan apa yang diharapkan frontend Anda
-    //    Kartu "Diproses" di frontend Anda (laporan.proses)
-    //    mungkin harusnya gabungan dari 'diterima' + 'diproses'
     const prosesGabungan = diterima + diproses;
 
     return {
-      total: total,           // Total semua aduan
-      pending: pending,       // Akan 0 untuk Pimpinan, tapi 1 (atau lebih) untuk Master Admin
-      proses: prosesGabungan, // Gabungan 'diterima' dan 'diproses'
-      selesai: dilaksanakan,  // Sesuai dengan 'dilaksanakan'
+      total: total,           
+      pending: pending,       
+      proses: prosesGabungan, 
+      selesai: dilaksanakan,  
       ditolak: ditolak,
     };
   } catch (err) {
@@ -59,14 +46,11 @@ export const getStatistics = async (role) => {
   }
 };
 
-// ==========================================================
-// FUNGSI STATISTIK SISTEM (YANG BENAR)
-// ==========================================================
 export const getSystemStatistics = async () => {
   try {
     const total_users = await prisma.user.count({});
     const active_admins = await prisma.admin.count({});
-    // 'categories' tidak diminta oleh frontend, jadi kita tidak hitung
+  
 
     return {
       total_users: total_users,
@@ -78,7 +62,6 @@ export const getSystemStatistics = async () => {
   }
 };
 
-// Pastikan Anda export default jika controller Anda menggunakannya
 export default {
   getStatistics,
   getSystemStatistics,

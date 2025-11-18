@@ -17,13 +17,10 @@ export default async function authMiddleware(req, res, next) {
 
     let user;
 
-    // ==========================================================
-    // PERBAIKAN DI SINI: Tambahkan || decoded.role === "pimpinan"
-    // ==========================================================
     if (
       decoded.role === "admin" ||
       decoded.role === "master_admin" ||
-      decoded.role === "pimpinan" // <-- INI YANG KURANG TADI
+      decoded.role === "pimpinan" 
     ) {
       // Cari di tabel ADMIN
       user = await prisma.admin.findUnique({
@@ -40,11 +37,7 @@ export default async function authMiddleware(req, res, next) {
       console.error("❌ User not found in DB for ID:", decoded.id, "Role:", decoded.role);
       return res.status(401).json({ message: "Unauthorized. User not found." });
     }
-
-    // Masukkan data user dan role ke request agar bisa dipakai di controller
     req.user = user;
-    
-    // Pastikan role diambil dari token atau database agar konsisten
     req.user.role = decoded.role; 
 
     next();

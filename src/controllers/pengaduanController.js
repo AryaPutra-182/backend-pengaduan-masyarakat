@@ -2,9 +2,6 @@ import prisma from "../utils/prisma.js";
 import path from "path";
 import fs from "fs";
 
-// =============================
-// CREATE PENGADUAN
-// =============================
 export const createPengaduan = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -40,11 +37,6 @@ export const createPengaduan = async (req, res) => {
   }
 };
 
-
-
-// =============================
-// GET PENGADUAN SAYA
-// =============================
 export const getPengaduanSaya = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -72,10 +64,6 @@ export const getPengaduanSaya = async (req, res) => {
   }
 };
 
-
-// =============================
-// GET DETAIL PENGADUAN
-// =============================
 export const getPengaduanDetail = async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -116,10 +104,6 @@ export const getPengaduanDetail = async (req, res) => {
   }
 };
 
-
-// =============================
-// UPLOAD LAMPIRAN
-// =============================
 export const uploadLampiran = async (req, res) => {
   try {
     const pengaduanId = Number(req.params.id);
@@ -155,10 +139,6 @@ export const uploadLampiran = async (req, res) => {
   }
 };
 
-
-// =============================
-// GET LAMPIRAN BY PENGADUAN
-// =============================
 export const getLampiranByPengaduan = async (req, res) => {
   try {
     const pengaduanId = Number(req.params.id);
@@ -181,10 +161,6 @@ export const getLampiranByPengaduan = async (req, res) => {
   }
 };
 
-
-// =============================
-// DELETE LAMPIRAN
-// =============================
 export const deleteLampiran = async (req, res) => {
   try {
     const id = Number(req.params.lampiranId);

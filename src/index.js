@@ -3,7 +3,7 @@ import cors from "cors";
 import path from "path";
 import fs from "fs"; // WAJIB ADA
 
-// ===== ROUTES =====
+
 import authRoutes from "./routes/auth.js";
 import pengaduanRoutes from "./routes/pengaduan.js";
 import adminRoutes from "./routes/admin.js";
@@ -19,17 +19,13 @@ import config from "./config/index.js";
 
 const app = express();
 
-// ===== MIDDLEWARE =====
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ============================================================
-// 🕵️‍♂️ DEBUGGER GAMBAR (Kode Khusus untuk Melacak Error)
-// ============================================================
 app.get("/uploads/:filename", (req, res) => {
   const rawFilename = req.params.filename;
-  const decodedFilename = decodeURIComponent(rawFilename); // Ubah %20 jadi spasi
+  const decodedFilename = decodeURIComponent(rawFilename); 
 
   console.log("\n--- 🔍 DEBUG REQUEST GAMBAR ---");
   console.log("1. URL Request:", rawFilename);
@@ -44,8 +40,6 @@ app.get("/uploads/:filename", (req, res) => {
   if (existPublic) {
     return res.sendFile(pathPublic);
   }
-
-  // Cek Path Root (Uploads biasa)
   const pathRoot = path.join(process.cwd(), "uploads", decodedFilename);
   const existRoot = fs.existsSync(pathRoot);
   console.log(`4. Cek di Root:   ${pathRoot}`);
@@ -58,14 +52,12 @@ app.get("/uploads/:filename", (req, res) => {
   console.log("---------------------------------\n");
   return res.status(404).send("File tidak ditemukan di server (Cek Terminal).");
 });
-// ============================================================
 
 
-// 3. Fallback Static Files
+
 app.use(express.static(path.join(process.cwd(), "public")));
 app.use("/uploads", express.static(path.join(process.cwd(), "public/uploads")));
 
-// ===== REAL ROUTES =====
 app.use("/api/auth", authRoutes);
 app.use("/api/pengaduan", pengaduanRoutes);
 app.use("/api/admin", adminRoutes);
@@ -77,11 +69,8 @@ app.use("/api/notifikasi", notifikasiRoutes);
 app.use("/api/pengumuman", pengumumanRoute);
 
 console.log("\n🔍 Registered Routes Loaded.");
+prisma.$connect().then(() => console.log(" Prisma connected successfully"));
 
-// ===== PRISMA =====
-prisma.$connect().then(() => console.log("✅ Prisma connected successfully"));
-
-// ===== RUN SERVER =====
 app.listen(config.port, () =>
-  console.log(`🔥 Server running on PORT ${config.port}`)
+  console.log(` Server running on PORT ${config.port}`)
 );

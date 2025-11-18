@@ -1,6 +1,4 @@
 import * as service from "../services/pengumumanService.js";
-
-// ================= CREATE =================
 export const createPengumuman = async (req, res) => {
   try {
     // Data body
@@ -13,8 +11,6 @@ export const createPengumuman = async (req, res) => {
         message: "Judul dan isi pengumuman wajib diisi.",
       });
     }
-
-    // Simpan path gambar kalau ada
     const gambar = req.file ? `/uploads/${req.file.filename}` : null;
 
     const pengumumanBaru = await service.createPengumuman(
@@ -33,7 +29,6 @@ export const createPengumuman = async (req, res) => {
   }
 };
 
-// ================= READ ALL =================
 export const getAllPengumuman = async (_, res) => {
   try {
     const data = await service.getAllPengumuman();
@@ -44,7 +39,6 @@ export const getAllPengumuman = async (_, res) => {
   }
 };
 
-// ================= READ ONE =================
 export const getPengumumanById = async (req, res) => {
   try {
     const data = await service.getPengumumanById(req.params.id);
@@ -60,7 +54,7 @@ export const getPengumumanById = async (req, res) => {
   }
 };
 
-// ================= UPDATE =================
+
 export const updatePengumuman = async (req, res) => {
   try {
     const updated = await service.updatePengumuman(req.params.id, req.body);
@@ -71,7 +65,6 @@ export const updatePengumuman = async (req, res) => {
   }
 };
 
-// ================= DELETE =================
 export const deletePengumuman = async (req, res) => {
   try {
     await service.deletePengumuman(req.params.id);
